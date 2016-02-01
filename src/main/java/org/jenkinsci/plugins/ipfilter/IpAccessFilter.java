@@ -10,6 +10,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,6 +48,7 @@ public class IpAccessFilter extends Plugin implements Filter, Describable<IpAcce
         if (request instanceof HttpServletRequest && getDescriptor().isEnabled()) {
             HttpServletRequest req = (HttpServletRequest) request;
             if (!isRequestAllowed(req, getDescriptor().getAllowedPattern())) {
+                ((HttpServletResponse)response).setStatus(401);
                 response.getWriter().write("Request from not allowed IP");
                 response.getWriter().flush();
                 response.getWriter().close();
