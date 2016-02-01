@@ -4,7 +4,6 @@ import hudson.Extension;
 import hudson.Plugin;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.Failure;
 import hudson.util.PluginServletFilter;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -48,7 +47,10 @@ public class IpAccessFilter extends Plugin implements Filter, Describable<IpAcce
         if (request instanceof HttpServletRequest && getDescriptor().isEnabled()) {
             HttpServletRequest req = (HttpServletRequest) request;
             if (!isRequestAllowed(req, getDescriptor().getAllowedPattern())) {
-                throw new Failure("Request from this IP Address not allowed");
+                response.getWriter().write("Request from not allowed IP");
+                response.getWriter().flush();
+                response.getWriter().close();
+                return;
             }
         }
         chain.doFilter(request, response);
@@ -89,6 +91,7 @@ public class IpAccessFilter extends Plugin implements Filter, Describable<IpAcce
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
             enabled =  json.getBoolean("enabled");
             String allowedAddrPattern = json.getString("allowedAddrPattern");
+            this.allowedAddrPattern = allowedAddrPattern;
             compile(allowedAddrPattern, "compiled pattern in configure()");
             save();
             return super.configure(req, json);
