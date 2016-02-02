@@ -127,6 +127,9 @@ public class IpAccessFilter extends Plugin implements Filter, Describable<IpAcce
         }
 
         public Pattern returnAllowedPattern() {
+            if (allowedPattern == null) {
+                compile(allowedAddrPattern, "compiled pattern in get()");
+            }
             return allowedPattern;
         }
     }
