@@ -47,7 +47,7 @@ public class IpAccessFilter extends Plugin implements Filter, Describable<IpAcce
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         if (request instanceof HttpServletRequest && getDescriptor().isEnabled()) {
             HttpServletRequest req = (HttpServletRequest) request;
-            if (!isRequestAllowed(req, getDescriptor().getAllowedPattern())) {
+            if (!isRequestAllowed(req, getDescriptor().returnAllowedPattern())) {
                 ((HttpServletResponse)response).setStatus(401);
                 response.getWriter().write("Request from not allowed IP");
                 response.getWriter().flush();
@@ -77,7 +77,7 @@ public class IpAccessFilter extends Plugin implements Filter, Describable<IpAcce
 
         private boolean enabled;
         private String allowedAddrPattern;
-        private Pattern allowedPattern;
+        private transient Pattern allowedPattern;
 
         public DescriptorImpl() {
             load();
@@ -91,7 +91,7 @@ public class IpAccessFilter extends Plugin implements Filter, Describable<IpAcce
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-            enabled =  json.getBoolean("enabled");
+            this.enabled =  json.getBoolean("enabled");
             String allowedAddrPattern = json.getString("allowedAddrPattern");
             this.allowedAddrPattern = allowedAddrPattern;
             compile(allowedAddrPattern, "compiled pattern in configure()");
@@ -121,9 +121,12 @@ public class IpAccessFilter extends Plugin implements Filter, Describable<IpAcce
                 this.allowedPattern = Pattern.compile(allowedAddrPattern);
                 LOGGER.log(Level.INFO, msg);
             }
+            else {
+                this.allowedPattern = null;
+            }
         }
 
-        public Pattern getAllowedPattern() {
+        public Pattern returnAllowedPattern() {
             return allowedPattern;
         }
     }
